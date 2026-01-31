@@ -4,6 +4,25 @@
 
 This file serves as the entry point for LLM agents working on the Link Shortener project. All coding standards, best practices, and guidelines are documented in separate markdown files located in the `/docs` directory.
 
+## ⚠️ CRITICAL: READ DOCUMENTATION FIRST
+
+**BEFORE generating ANY code, you MUST:**
+
+1. **ALWAYS read the relevant documentation file(s) in `/docs`** for the area you're working on
+2. **NEVER generate code without first consulting the appropriate guideline document**
+3. **Review existing patterns** in the codebase to ensure consistency
+
+**This is not optional.** The documentation contains critical implementation details, security requirements, and established patterns that MUST be followed. Generating code without reading the relevant documentation will likely result in:
+- Security vulnerabilities
+- Inconsistent implementations
+- Breaking established patterns
+- Type safety issues
+- Performance problems
+
+**Available Documentation:**
+- `/docs/authentication.md` - Authentication, route protection, security
+- `/docs/ui-components.md` - UI components, styling, forms
+
 ## Project Stack
 
 - **Framework**: Next.js 16+ (App Router)
@@ -18,10 +37,17 @@ This file serves as the entry point for LLM agents working on the Link Shortener
 
 ## Documentation Structure
 
-The coding guidelines are organized into the following documents. ALWAYS refer to the relevant .md file BEFORE generate any code:
+The coding guidelines are organized into the following documents. **You MUST read the relevant documentation BEFORE generating any code:**
 
-- **[Authentication](/docs/authentication.md)** - Clerk authentication implementation, route protection, and security guidelines
-- **[UI Components](/docs/ui-components.md)** - shadcn/ui component usage, styling patterns, and form handling
+- **[Authentication](/docs/authentication.md)** - Clerk authentication implementation, route protection, and security guidelines *(READ THIS before working on auth, protected routes, or user data)*
+- **[UI Components](/docs/ui-components.md)** - shadcn/ui component usage, styling patterns, and form handling *(READ THIS before creating forms, UI components, or styling)*
+
+**Workflow:**
+1. User requests a task
+2. Identify which documentation file(s) are relevant
+3. Read the ENTIRE relevant documentation file(s)
+4. Review existing code patterns
+5. Generate code following the documented guidelines
 
 
 ## Quick Reference
