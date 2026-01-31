@@ -40,10 +40,10 @@ export function Navbar() {
           ) : (
             // Unauthenticated user
             <>
-              <SignInButton mode="modal">
+              <SignInButton mode="modal" forceRedirectUrl="/dashboard">
                 <Button variant="ghost">Entrar</Button>
               </SignInButton>
-              <SignUpButton mode="modal">
+              <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
                 <Button>Criar Conta</Button>
               </SignUpButton>
             </>
