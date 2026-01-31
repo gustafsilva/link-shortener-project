@@ -49,7 +49,7 @@ export default async function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Recursos Poderosos
@@ -120,30 +120,6 @@ export default async function Home() {
             </CardContent>
           </Card>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="max-w-4xl mx-auto border-2 border-primary/20">
-          <CardHeader className="text-center space-y-4 pb-8">
-            <CardTitle className="text-3xl md:text-4xl">
-              Pronto para começar?
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Junte-se a milhares de usuários que já estão encurtando seus links
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-4">
-            <Button asChild size="lg" className="text-lg w-full sm:w-auto">
-              <Link href="/dashboard">
-                Criar Minha Conta Grátis
-              </Link>
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              Configure em menos de 1 minuto
-            </p>
-          </CardContent>
-        </Card>
       </section>
 
       {/* Footer */}
