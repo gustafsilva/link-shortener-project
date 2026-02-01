@@ -53,8 +53,48 @@ Acesse [http://localhost:3000](http://localhost:3000)
 ```bash
 yarn dev          # Desenvolvimento
 yarn build        # Build de produção
+yarn test         # Executar testes
+yarn test:watch   # Executar testes em modo watch
+yarn test:coverage # Executar testes com cobertura
 yarn db:generate  # Gerar migrações
 yarn db:studio    # Drizzle Studio
+```
+
+## Testes
+
+O projeto usa **Jest** para testes unitários. Os testes cobrem:
+- ✅ Mutations (business logic)
+- ✅ Repositories (data access)
+- ✅ Utility functions
+
+### Executar testes
+
+```bash
+# Executar todos os testes
+yarn test
+
+# Modo watch (re-executa ao salvar)
+yarn test:watch
+
+# Com relatório de cobertura
+yarn test:coverage
+```
+
+### Estrutura de testes
+
+```
+lib/
+  mutations/
+    link-mutations.ts
+    __tests__/
+      link-mutations.test.ts
+  repositories/
+    link-repository.ts
+    __tests__/
+      link-repository.test.ts
+  utils.ts
+  __tests__/
+    utils.test.ts
 ```
 
 ## Documentação
