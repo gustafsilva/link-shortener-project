@@ -59,19 +59,19 @@ The coding guidelines are organized into the following documents. **You MUST rea
 ### Key Commands
 ```bash
 # Development
-npm run dev         # Start development server
+yarn dev         # Start development server
 
 # Database
-npm run db:generate # Generate migrations
-npm run db:migrate  # Run migrations
-npm run db:studio   # Open Drizzle Studio
+yarn db:generate # Generate migrations
+yarn db:migrate  # Run migrations
+yarn db:studio   # Open Drizzle Studio
 
 # Build
-npm run build       # Build for production
-npm run start       # Start production server
+yarn build       # Build for production
+yarn start       # Start production server
 
 # Linting
-npm run lint        # Run ESLint
+yarn lint        # Run ESLint
 ```
 
 ### Environment Variables Required

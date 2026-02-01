@@ -26,7 +26,7 @@ Encurtador de URLs moderno construído com Next.js, TypeScript e PostgreSQL.
 
 1. Clone o repositório e instale as dependências:
 ```bash
-npm install
+yarn install
 ```
 
 2. Configure as variáveis de ambiente (`.env.local`):
@@ -38,12 +38,12 @@ CLERK_SECRET_KEY=sk_test_...
 
 3. Execute as migrações do banco:
 ```bash
-npm run db:migrate
+yarn db:migrate
 ```
 
 4. Inicie o servidor de desenvolvimento:
 ```bash
-npm run dev
+yarn dev
 ```
 
 Acesse [http://localhost:3000](http://localhost:3000)
@@ -51,10 +51,10 @@ Acesse [http://localhost:3000](http://localhost:3000)
 ## Comandos Úteis
 
 ```bash
-npm run dev          # Desenvolvimento
-npm run build        # Build de produção
-npm run db:generate  # Gerar migrações
-npm run db:studio    # Drizzle Studio
+yarn dev          # Desenvolvimento
+yarn build        # Build de produção
+yarn db:generate  # Gerar migrações
+yarn db:studio    # Drizzle Studio
 ```
 
 ## Documentação
