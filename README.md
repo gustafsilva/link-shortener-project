@@ -2,12 +2,25 @@
 
 Encurtador de URLs moderno construído com Next.js, TypeScript e PostgreSQL.
 
+## Funcionalidades
+
+- ✂️ Encurtamento de URLs com códigos personalizáveis
+- 🔐 Autenticação de usuários
+- 📊 Dashboard com histórico de links
+- 📈 Estatísticas de cliques
+
 ## Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Database**: PostgreSQL (Neon) + Drizzle ORM
 - **Auth**: Clerk
 - **UI**: Tailwind CSS + shadcn/ui
+
+## Pré-requisitos
+
+- Node.js 18+
+- Conta no [Neon](https://neon.tech) (PostgreSQL)
+- Conta no [Clerk](https://clerk.com) (Autenticação)
 
 ## Setup Rápido
 
