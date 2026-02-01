@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { shortLinks } from '@/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export const linkRepository = {
   async create(data: { userId: string; originalUrl: string; shortCode: string }) {
@@ -28,16 +28,20 @@ export const linkRepository = {
     return link;
   },
 
-  async deleteById(id: string, userId: string) {
+  async findById(id: string) {
+    const [link] = await db
+      .select()
+      .from(shortLinks)
+      .where(eq(shortLinks.id, id))
+      .limit(1);
+    return link;
+  },
+
+  async deleteById(id: string) {
     const [deleted] = await db
       .delete(shortLinks)
-      .where(and(eq(shortLinks.id, id), eq(shortLinks.userId, userId)))
+      .where(eq(shortLinks.id, id))
       .returning();
-    
-    if (!deleted) {
-      throw new Error('Link não encontrado ou você não tem permissão para excluí-lo.');
-    }
-    
     return deleted;
   },
 };
