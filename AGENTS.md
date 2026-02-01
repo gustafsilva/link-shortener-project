@@ -4,25 +4,6 @@
 
 This file serves as the entry point for LLM agents working on the Link Shortener project. All coding standards, best practices, and guidelines are documented in separate markdown files located in the `/docs` directory.
 
-## ⚠️ CRITICAL: READ DOCUMENTATION FIRST
-
-**BEFORE generating ANY code, you MUST:**
-
-1. **ALWAYS read the relevant documentation file(s) in `/docs`** for the area you're working on
-2. **NEVER generate code without first consulting the appropriate guideline document**
-3. **Review existing patterns** in the codebase to ensure consistency
-
-**This is not optional.** The documentation contains critical implementation details, security requirements, and established patterns that MUST be followed. Generating code without reading the relevant documentation will likely result in:
-- Security vulnerabilities
-- Inconsistent implementations
-- Breaking established patterns
-- Type safety issues
-- Performance problems
-
-**Available Documentation:**
-- `/docs/authentication.md` - Authentication, route protection, security
-- `/docs/ui-components.md` - UI components, styling, forms
-
 ## Project Stack
 
 - **Framework**: Next.js 16+ (App Router)
@@ -41,6 +22,9 @@ The coding guidelines are organized into the following documents. **You MUST rea
 
 - **[Authentication](/docs/authentication.md)** - Clerk authentication implementation, route protection, and security guidelines *(READ THIS before working on auth, protected routes, or user data)*
 - **[UI Components](/docs/ui-components.md)** - shadcn/ui component usage, styling patterns, and form handling *(READ THIS before creating forms, UI components, or styling)*
+- **[Data Fetching](/.github/instructions/data-fetching.instructions.md)** - Repository pattern and Drizzle ORM usage *(READ THIS before working with database queries or data access)*
+- **[Mutations](/.github/instructions/mutations.instructions.md)** - Business logic layer implementation *(READ THIS before creating business logic or data mutations)*
+- **[Server Functions](/.github/instructions/server-functions.instructions.md)** - Server Actions, error handling, and Server Components usage *(READ THIS before creating server functions, handling errors, or working with Server Components)*
 
 **Workflow:**
 1. User requests a task

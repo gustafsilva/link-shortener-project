@@ -1,71 +1,20 @@
 ---
-description: Read this file to understand how to fetch data for the project.
+description: Read this file to understand how to implement repositories and work with Drizzle ORM for data access.
 ---
-# Data Fetching Instructions
-This document provides guidelines on how to fetch data for the project in Next.js. Adhere to these instructions to ensure consistency and optimal performance.
+# Data Fetching Instructions (Repository & Drizzle ORM)
+This document provides guidelines on how to implement the Repository layer and work with Drizzle ORM for database access. This is the **data access layer** of the application.
 
-## Architecture Layers
+## Architecture Position
 
-This project follows a clean architecture pattern with three distinct layers:
+This project follows a clean architecture pattern:
 
 ```
 Server Component → Mutations → Repository → Database (Drizzle ORM)
 ```
 
-### Layer 1: Server Components (Presentation)
-- **ALWAYS use Server Components** for data fetching whenever possible
-- Server Components provide better performance and SEO
-- **MUST NOT** access Drizzle ORM directly
-- **MUST NOT** access Repository layer directly
-- **MUST ONLY** communicate with the Mutations layer
+**This document covers the Repository layer**, which is the **ONLY layer** that should interact with Drizzle ORM directly.
 
-### Layer 2: Mutations (Business Logic)
-- Server-side functions that handle business logic
-- Located in `/lib/mutations/` directory
-- Can be called from Server Components
-- **MUST** use the Repository layer for database access
-- **MUST NOT** access Drizzle ORM directly
-- Should handle validation, authorization, and error handling
-- **MUST validate all input data using Zod schemas**
-- Use `'use server'` directive for Next.js Server Actions
-
-**Example Structure:**
-```typescript
-'use server';
-
-import { z } from 'zod';
-import { auth } from '@clerk/nextjs/server';
-import { linkRepository } from '@/lib/repositories/link-repository';
-
-// Define validation schema
-const createLinkSchema = z.object({
-  url: z.string().url('Invalid URL format'),
-  customCode: z.string().min(3).max(20).optional(),
-});
-
-export async function createShortLink(url: string, customCode?: string) {
-  // Validate input with Zod
-  const validatedData = createLinkSchema.parse({ url, customCode });
-  
-  // Authorization
-  const { userId } = await auth();
-  if (!userId) {
-    throw new Error('Unauthorized');
-  }
-  
-  // Business logic
-  const code = validatedData.customCode || generateRandomCode();
-  
-  // Use Repository
-  return await linkRepository.create({
-    url: validatedData.url,
-    code,
-    userId,
-  });
-}
-```
-
-### Layer 3: Repository (Data Access)
+## Repository Layer (Data Access)
 - Abstracts all database operations
 - Located in `/lib/repositories/` directory
 - **ONLY layer that can access Drizzle ORM directly**
@@ -170,27 +119,350 @@ export async function getUserLinks() {
 }
 ```
 
-**3. Repository** (`/lib/repositories/link-repository.ts`):
 ```typescript
 import { db } from '@/db';
 import { links } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const linkRepository = {
+  async create(data: { url: string; code: string; userId: string }) {
+    const [link] = await db.insert(links).values(data).returning();
+    return link;
+  },
+  
+  async findByCode(code: string) {
+    return await db.query.links.findFirst({
+      where: eq(links.code, code),
+    });
+  },
+  
+  async findById(id: string) {
+    return await db.query.links.findFirst({
+      where: eq(links.id, id),
+    });
+  },
+  
   async findByUserId(userId: string) {
     return await db.query.links.findMany({
       where: eq(links.userId, userId),
       orderBy: (links, { desc }) => [desc(links.createdAt)],
     });
   },
+  
+  async update(id: string, data: Partial<{ url: string; code: string }>) {
+    const [updated] = await db
+      .update(links)
+      .set(data)
+      .where(eq(links.id, id))
+      .returning();
+    return updated;
+  },
+  
+  async delete(id: string) {
+    await db.delete(links).where(eq(links.id, id));
+  },
 };
 ```
 
-## When to Use Client Components
+## Rules for Repositories
 
-Use Client Components (`'use client'`) only when you need:
-- Interactive features (onClick, onChange, etc.)
-- React hooks (useState, useEffect, etc.)
-- Browser APIs (localStorage, window, etc.)
+### ✅ DO:
+- Create one repository file per database table/entity
+- Use Drizzle ORM for all database operations
+- Export an object with methods (repository pattern)
+- Use TypeScript for type safety
+- Handle database-specific logic (queries, relations, etc.)
+- Use Drizzle's query builder for complex queries
+- Return raw data from the database
+- Keep methods focused and single-purpose
 
-**Even with Client Components, data fetching should still go through the mutation layer using Server Actions.**
+### ❌ DON'T:
+- Don't implement business logic in repositories
+- Don't handle authorization in repositories
+- Don't validate input data (that's the mutation's job)
+- Don't throw business-level errors
+- Don't access other repositories directly (use composition in mutations)
+- Don't expose Drizzle implementation details to other layers
+
+## Working with Drizzle ORM
+
+### Database Instance
+
+The database instance is configured in `/db/index.ts`:
+
+```typescript
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import * as schema from './schema';
+
+const sql = neon(process.env.DATABASE_URL!);
+export const db = drizzle(sql, { schema });
+```
+
+### Schema Definition
+
+Schemas are defined in `/db/schema.ts`:
+
+```typescript
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+
+export const links = pgTable('links', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  url: text('url').notNull(),
+  code: varchar('code', { length: 20 }).notNull().unique(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+```
+
+### Common Drizzle Operations
+
+#### Insert Data
+```typescript
+async create(data: { url: string; code: string; userId: string }) {
+  const [link] = await db.insert(links).values(data).returning();
+  return link;
+}
+```
+
+#### Query Data
+```typescript
+// Find one record
+async findByCode(code: string) {
+  return await db.query.links.findFirst({
+    where: eq(links.code, code),
+  });
+}
+
+// Find multiple records
+async findByUserId(userId: string) {
+  return await db.query.links.findMany({
+    where: eq(links.userId, userId),
+    orderBy: (links, { desc }) => [desc(links.createdAt)],
+  });
+}
+
+// Find with relations
+async findWithClicks(code: string) {
+  return await db.query.links.findFirst({
+    where: eq(links.code, code),
+    with: {
+      clicks: true,
+    },
+  });
+}
+```
+
+#### Update Data
+```typescript
+async update(id: string, data: Partial<{ url: string; code: string }>) {
+  const [updated] = await db
+    .update(links)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(links.id, id))
+    .returning();
+  return updated;
+}
+```
+
+#### Delete Data
+```typescript
+async delete(id: string) {
+  await db.delete(links).where(eq(links.id, id));
+}
+```
+
+### Using Drizzle Operators
+
+```typescript
+import { eq, ne, gt, gte, lt, lte, like, and, or, desc, asc } from 'drizzle-orm';
+
+// Equal
+where: eq(links.userId, userId)
+
+// Not equal
+where: ne(links.status, 'deleted')
+
+// Greater than
+where: gt(links.clicks, 100)
+
+// Like (pattern matching)
+where: like(links.url, '%example.com%')
+
+// Combining conditions
+where: and(
+  eq(links.userId, userId),
+  gt(links.clicks, 10)
+)
+
+// OR conditions
+where: or(
+  eq(links.status, 'active'),
+  eq(links.status, 'pending')
+)
+
+// Ordering
+orderBy: (links, { desc, asc }) => [desc(links.createdAt), asc(links.code)]
+```
+
+### Complex Queries
+
+#### Joins and Relations
+```typescript
+// Define relation in schema
+export const linksRelations = relations(links, ({ many }) => ({
+  clicks: many(clicks),
+}));
+
+// Use in repository
+async findWithStats(userId: string) {
+  return await db.query.links.findMany({
+    where: eq(links.userId, userId),
+    with: {
+      clicks: {
+        columns: { id: true },
+      },
+    },
+  });
+}
+```
+
+#### Aggregations
+```typescript
+import { count, sum, avg } from 'drizzle-orm';
+
+async getClickStats(linkId: string) {
+  const result = await db
+    .select({
+      totalClicks: count(clicks.id),
+      uniqueVisitors: count(clicks.userId).distinct(),
+    })
+    .from(clicks)
+    .where(eq(clicks.linkId, linkId));
+    
+  return result[0];
+}
+```
+
+## Repository Patterns
+
+### CRUD Operations
+Every repository should provide basic CRUD methods:
+
+```typescript
+export const entityRepository = {
+  // Create
+  async create(data: CreateData) { /* ... */ },
+  
+  // Read
+  async findById(id: string) { /* ... */ },
+  async findByUserId(userId: string) { /* ... */ },
+  async findAll() { /* ... */ },
+  
+  // Update
+  async update(id: string, data: UpdateData) { /* ... */ },
+  
+  // Delete
+  async delete(id: string) { /* ... */ },
+};
+```
+
+### Specialized Queries
+Add domain-specific query methods:
+
+```typescript
+export const linkRepository = {
+  // ... CRUD methods ...
+  
+  async findPopularLinks(limit: number = 10) {
+    return await db.query.links.findMany({
+      orderBy: (links, { desc }) => [desc(links.clicks)],
+      limit,
+    });
+  },
+  
+  async findRecentLinks(userId: string, limit: number = 5) {
+    return await db.query.links.findMany({
+      where: eq(links.userId, userId),
+      orderBy: (links, { desc }) => [desc(links.createdAt)],
+      limit,
+    });
+  },
+  
+  async incrementClicks(id: string) {
+    await db
+      .update(links)
+      .set({ clicks: sql`${links.clicks} + 1` })
+      .where(eq(links.id, id));
+  },
+};
+```
+
+## Best Practices
+
+1. **Keep it simple** - Repositories should only handle data access, no business logic
+2. **One repository per table** - Don't create giant repositories
+3. **Descriptive method names** - `findByUserId`, not `getLinks`
+4. **Return data directly** - Don't transform or validate, just return what the database gives you
+5. **Use TypeScript** - Leverage Drizzle's type inference
+6. **Handle null cases** - Return null/undefined when data isn't found
+7. **Use transactions** - For operations that need atomicity
+8. **Optimize queries** - Select only needed columns, use indexes
+
+## Transactions
+
+For operations that need to be atomic:
+
+```typescript
+async createLinkWithClick(linkData: LinkData, clickData: ClickData) {
+  return await db.transaction(async (tx) => {
+    const [link] = await tx.insert(links).values(linkData).returning();
+    const [click] = await tx.insert(clicks).values({
+      ...clickData,
+      linkId: link.id,
+    }).returning();
+    
+    return { link, click };
+  });
+}
+```
+
+## Error Handling
+
+Let database errors bubble up - don't catch them in repositories:
+
+```typescript
+// ❌ DON'T
+async findByCode(code: string) {
+  try {
+    return await db.query.links.findFirst({
+      where: eq(links.code, code),
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    return null;
+  }
+}
+
+// ✅ DO
+async findByCode(code: string) {
+  return await db.query.links.findFirst({
+    where: eq(links.code, code),
+  });
+}
+```
+
+## Summary
+
+The Repository layer:
+- ✅ Is the ONLY layer that accesses Drizzle ORM
+- ✅ Provides clean data access interface
+- ✅ Handles database-specific queries and logic
+- ✅ Returns raw database data
+- ❌ Does NOT handle business logic
+- ❌ Does NOT validate input
+- ❌ Does NOT handle authorization
+- ❌ Should NOT be called directly from Server Components
+
+**Remember:** Mutations → Repositories → Drizzle ORM. Never skip layers!
