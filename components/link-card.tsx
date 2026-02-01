@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { deleteShortLink } from '@/lib/mutations/link-mutations';
+import { EditLinkDialog } from '@/components/edit-link-dialog';
 import { ExternalLink, Copy, Trash2, Check } from 'lucide-react';
 
 interface Link {
@@ -96,6 +97,7 @@ export function LinkCard({ link }: LinkCardProps) {
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
+            <EditLinkDialog link={link} />
             <Button
               size="icon"
               variant="outline"

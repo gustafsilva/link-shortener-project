@@ -44,4 +44,13 @@ export const linkRepository = {
       .returning();
     return deleted;
   },
+
+  async update(id: string, data: { originalUrl?: string; shortCode?: string }) {
+    const [updated] = await db
+      .update(shortLinks)
+      .set(data)
+      .where(eq(shortLinks.id, id))
+      .returning();
+    return updated;
+  },
 };

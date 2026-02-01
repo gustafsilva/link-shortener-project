@@ -23,6 +23,17 @@ const deleteLinkSchema = z.object({
   id: z.string().min(1, 'ID do link é obrigatório'),
 });
 
+const updateLinkSchema = z.object({
+  id: z.string().min(1, 'ID do link é obrigatório'),
+  url: z.string().url('URL inválida. Por favor, insira uma URL válida.'),
+  customCode: z
+    .string()
+    .min(3, 'O código deve ter pelo menos 3 caracteres.')
+    .max(20, 'O código deve ter no máximo 20 caracteres.')
+    .regex(/^[a-zA-Z0-9-_]+$/, 'O código deve conter apenas letras, números, hífens e underscores.')
+    .optional(),
+});
+
 // Helper function to generate random short code
 function generateShortCode(): string {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -142,5 +153,59 @@ export async function deleteShortLink(
       return { error: error.errors[0].message };
     }
     return { error: 'Erro ao excluir link' };
+  }
+}
+
+// Update a link
+export async function updateShortLink(
+  data: { id: string; url: string; customCode?: string }
+): Promise<{ success: true; data: Link } | { error: string }> {
+  try {
+    // Authorization
+    const { userId } = await auth();
+    if (!userId) {
+      return { error: 'Você precisa estar autenticado' };
+    }
+    
+    // Validate input
+    const validatedData = updateLinkSchema.parse(data);
+    
+    // Verify ownership before update
+    const link = await linkRepository.findById(validatedData.id);
+    if (!link) {
+      return { error: 'Link não encontrado' };
+    }
+    
+    if (link.userId !== userId) {
+      return { error: 'Você não tem permissão para editar este link' };
+    }
+    
+    // Check if custom code is being changed and if it already exists
+    if (validatedData.customCode && validatedData.customCode !== link.shortCode) {
+      const existing = await linkRepository.findByShortCode(validatedData.customCode);
+      if (existing) {
+        return { error: 'Este código já está em uso. Por favor, escolha outro.' };
+      }
+    }
+    
+    // Update link
+    const updated = await linkRepository.update(validatedData.id, {
+      originalUrl: validatedData.url,
+      shortCode: validatedData.customCode,
+    });
+    
+    if (!updated) {
+      return { error: 'Erro ao atualizar link' };
+    }
+    
+    // Revalidate dashboard page
+    revalidatePath('/dashboard');
+    
+    return { success: true, data: updated };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
+    return { error: 'Erro ao atualizar link' };
   }
 }
