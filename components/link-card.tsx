@@ -4,6 +4,17 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { deleteShortLink } from '@/lib/mutations/link-mutations';
 import { EditLinkDialog } from '@/components/edit-link-dialog';
 import { ExternalLink, Copy, Trash2, Check } from 'lucide-react';
@@ -22,6 +33,7 @@ interface LinkCardProps {
 export function LinkCard({ link }: LinkCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   // Use URL relativa para evitar erro de hidratação
   const shortUrl = `/${link.shortCode}`;
@@ -29,11 +41,9 @@ export function LinkCard({ link }: LinkCardProps) {
   const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/${link.shortCode}` : shortUrl;
 
   async function handleDelete() {
-    if (!confirm('Tem certeza que deseja excluir este link?')) {
-      return;
-    }
-
     setIsDeleting(true);
+    setIsAlertOpen(false);
+    
     try {
       const result = await deleteShortLink(link.id);
       
@@ -119,15 +129,32 @@ export function LinkCard({ link }: LinkCardProps) {
               </a>
             </Button>
             <EditLinkDialog link={link} />
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              title="Excluir link"
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  disabled={isDeleting}
+                  title="Excluir link"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir este link? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting ? 'Excluindo...' : 'Excluir'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </CardHeader>
