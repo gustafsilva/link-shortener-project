@@ -107,7 +107,7 @@ export async function createShortLink(
     return { success: true, data: link };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0].message };
     }
     return { error: 'Erro ao criar link' };
   }
@@ -150,7 +150,7 @@ export async function deleteShortLink(
     return { success: true, data: deleted };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0].message };
     }
     return { error: 'Erro ao excluir link' };
   }
@@ -204,7 +204,7 @@ export async function updateShortLink(
     return { success: true, data: updated };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
+      return { error: error.issues[0].message };
     }
     return { error: 'Erro ao atualizar link' };
   }

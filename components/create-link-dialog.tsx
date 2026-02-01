@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -57,15 +58,30 @@ export function CreateLinkDialog() {
     setError(null);
 
     try {
-      await createShortLink({
+      const result = await createShortLink({
         url: data.url,
         customCode: data.customCode || undefined,
       });
 
+      if ('error' in result) {
+        setError(result.error);
+        toast.error('Erro ao criar link', {
+          description: result.error,
+        });
+        return;
+      }
+
+      toast.success('Link criado com sucesso!', {
+        description: `Seu link encurtado está pronto: /${result.data.shortCode}`,
+      });
       form.reset();
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocorreu um erro ao criar o link.');
+      const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro ao criar o link.';
+      setError(errorMessage);
+      toast.error('Erro ao criar link', {
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }

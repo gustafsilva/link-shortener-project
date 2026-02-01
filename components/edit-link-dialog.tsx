@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -84,12 +85,22 @@ export function EditLinkDialog({ link }: EditLinkDialogProps) {
 
       if ('error' in result) {
         setError(result.error);
+        toast.error('Erro ao atualizar link', {
+          description: result.error,
+        });
         return;
       }
 
+      toast.success('Link atualizado com sucesso!', {
+        description: `Suas alterações foram salvas.`,
+      });
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocorreu um erro ao atualizar o link.');
+      const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro ao atualizar o link.';
+      setError(errorMessage);
+      toast.error('Erro ao atualizar link', {
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }

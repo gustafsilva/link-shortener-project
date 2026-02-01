@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { deleteShortLink } from '@/lib/mutations/link-mutations';
@@ -34,9 +35,24 @@ export function LinkCard({ link }: LinkCardProps) {
 
     setIsDeleting(true);
     try {
-      await deleteShortLink(link.id);
+      const result = await deleteShortLink(link.id);
+      
+      if ('error' in result) {
+        toast.error('Erro ao excluir link', {
+          description: result.error,
+        });
+        setIsDeleting(false);
+        return;
+      }
+
+      toast.success('Link excluído com sucesso!', {
+        description: 'O link foi removido permanentemente.',
+      });
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir o link.');
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir o link.';
+      toast.error('Erro ao excluir link', {
+        description: errorMessage,
+      });
       setIsDeleting(false);
     }
   }
@@ -46,8 +62,13 @@ export function LinkCard({ link }: LinkCardProps) {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      toast.success('Link copiado!', {
+        description: 'O link foi copiado para a área de transferência.',
+      });
     } catch {
-      alert('Erro ao copiar o link.');
+      toast.error('Erro ao copiar', {
+        description: 'Não foi possível copiar o link.',
+      });
     }
   }
 
